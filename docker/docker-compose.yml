@@ -1,0 +1,27 @@
+version: 3.4
+
+services:
+  nginx_quest:
+    build:
+      context: backend/nginx
+      dockerfile: Dockerfile
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+    - ./../:/app
+    expose:
+      - 9001
+  php_quest:
+    build:
+      context: backend/php
+      dockerfile: Dockerfile
+    volumes:
+    - /../:/app
+  mysql_quest:
+    build:
+      context: backend/mysql
+      dockerfile: Dockerfile
+    ports:
+    - 3308:3306
+    -
