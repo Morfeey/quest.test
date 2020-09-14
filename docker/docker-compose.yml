@@ -1,4 +1,4 @@
-version: 3.4
+version: "3.4"
 
 services:
   nginx_quest:
@@ -6,22 +6,64 @@ services:
       context: backend/nginx
       dockerfile: Dockerfile
     ports:
-    - 80:80
-    - 443:443
+      - 80:80
+      - 443:443
     volumes:
-    - ./../:/app
+      - ./../:/app
     expose:
-      - 9001
+      - 9000
+#    depends_on:
+#      - php_quest
+    networks:
+      - quest-test-network
   php_quest:
     build:
       context: backend/php
       dockerfile: Dockerfile
+      args:
+        TIMEZONE: ${TIMEZONE}
+    env_file:
+      - .env
+    depends_on:
+      - nginx_quest
+#    expose:
+#      - 9000
     volumes:
-    - /../:/app
+      - ./../:/app
+    networks:
+      - quest-test-network
   mysql_quest:
     build:
       context: backend/mysql
       dockerfile: Dockerfile
+    restart: always
     ports:
     - 3308:3306
-    -
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    env_file:
+      - .env
+    networks:
+      - quest-test-network
+  redis_quest:
+    image: redis
+    ports:
+      - 6379:6379
+    networks:
+      - quest-test-network
+  front_quest:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+    - 8080:8080
+    volumes:
+    - ./../front:/front
+    networks:
+      - quest-test-network
+networks:
+  quest-test-network:
+    driver: bridge
